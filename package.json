@@ -1,0 +1,22 @@
+{
+  "name": "email-classifier",
+  "version": "1.0.0",
+  "description": "A mini-project from Udacity's Intro to Machine Learning course",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Gelio/email-classifier.git"
+  },
+  "author": "Grzegorz Rozdzialik <voreny.gelio@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Gelio/email-classifier/issues"
+  },
+  "homepage": "https://github.com/Gelio/email-classifier#readme",
+  "dependencies": {
+    "machine_learning": "0.0.8"
+  }
+}
