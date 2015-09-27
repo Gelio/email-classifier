@@ -107,18 +107,26 @@ dataProcessor.prototype.parseWordData = function(wordData) {
 dataProcessor.prototype.trimData = function() {
     if(this.states.wordsParsed) {
         var self = this,
-            trimLogger = new this.timeLogger('trimming data');
+            trimLogger = new this.timeLogger('trimming data'),
+            prevRows = this.data.length;
 
-        this.data.forEach(function (email, index) {
-            if (!email.words || email.words === null || !email.author || email.author === null) {
+        /*this.data.forEach(function (email, index) {
+            if (email.words === undefined || email.words === null || email.author === undefined || email.author === null) {
                 self.data.splice(index, 1);
+                ++deletedRows;
                 return;
             }
             self.data[index].words = email.words.trim();
+        });*/
+
+        // Simplified with filter
+        this.data = this.data.filter(function(email, index) {
+            return !(email.words === null || email.author === null);
         });
 
         this.states.trimmed = true;
         trimLogger.finished();
+        console.log('Deleted', prevRows-this.data.length, 'rows');
     }
     else
         throw 'Tried to trim words before they were parsed';

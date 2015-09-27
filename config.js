@@ -7,15 +7,16 @@ var config = {
     classifierFile: baseUrl + 'classifier.json',
     saveClassifier: true,
     loadExistingClassifier: true,
-    logTrainingMessages: false,
 
+
+    logTrainingMessages: true,
     logDurationInfo: true,
 
     forceDataParsing: true,
     forceClassifierTeaching: true,
 
-    limitData: 0.1,   // either false or a percentage (float, e.g. 0.5) to which limit data
-    testDataPercentage: 0.1   // what percentage of data should be used for testing
+    limitData: 0.8,   // either false or a percentage (float, e.g. 0.5) to which limit data
+    testDataPercentage: 0.2   // what percentage of data (post limit) should be used for testing
 };
 
 module.exports = config;

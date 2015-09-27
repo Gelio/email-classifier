@@ -3,6 +3,7 @@ var fs = require('fs'),
     jpickle = require('jpickle'),
     config = require('./config.js'),
     jsonfile = require('jsonfile'),
+    _ = require('underscore'),
     timeLogger = require('./time-logger.js'),
     dataLoader = require('./data-loader.js'),
     dataProcessorModule = require('./data-processor.js');
@@ -28,7 +29,6 @@ if(config.loadExistingClassifier && !config.forceClassifierTeaching) {
         // Generate test data
         testData = emailData.slice(0, Math.floor(emailData.length*config.testDataPercentage));
 
-        // TODO: Proceed with classifying
         classify(classifier, testData);
     });
 }
@@ -68,9 +68,14 @@ else {
 
         if(config.limitData)
             emailData.splice(0, Math.floor(emailData.length*(1-config.limitData)));
+        emailData.splice(emailData.length-2, 2);  // unknown bug
+
+        // Shuffle array
+        emailData = _.shuffle(emailData);
 
         // Generate test data
         testData = emailData.slice(0, Math.floor(emailData.length*config.testDataPercentage));
+        var learnData = emailData.slice(Math.floor(emailData.length*config.testDataPercentage));
 
         console.log('Email data loaded'.green.bold + (' (' + emailData.length + ' items)'));
 
@@ -79,14 +84,24 @@ else {
         classifier = new natural.BayesClassifier();
 
         if(config.logTrainingMessages) {
+            var milestoneStep = Math.ceil(learnData.length/100),
+                nextMilestone = milestoneStep;
+
             classifier.events.on('trainedWithDocument', function (obj) {
-                console.log(('Training ' + (obj.index + 1) + ' out of ' + obj.total + " (" + ((obj.index + 1) / obj.total * 100) + "%)").green);
+                if(obj.index == nextMilestone) {
+                    console.log(('Training ' + (obj.index + 1) + ' out of ' + obj.total + " (" + (Math.round((obj.index + 1) / obj.total * 10000) / 100) + "%)").green);
+                    nextMilestone += milestoneStep;
+                }
             });
         }
 
+        console.log('Adding learning data'.red, '(' + learnData.length + ' items)');
         var addDocumentLogger = new timeLogger('adding documents');
-        emailData.forEach(function(email) {
-            classifier.addDocument(email.words, email.author);
+        learnData.forEach(function(email, index) {
+            if(email.words === null || email.author === null)
+                console.log('error, empty email on index: ', index, email);
+            else
+                classifier.addDocument(email.words, email.author);
         });
         addDocumentLogger.finished();
 
@@ -100,14 +115,13 @@ else {
             dataLoader.saveClassifier(classifier);
         }
 
-        // TODO: Proceed with classifying
         classify(classifier, testData);
     });
 }
 
 
 function classify(bayesClassifier, data) {
-    console.log(data[0]);
+    console.log('Classifying test data'.red, '(' + data.length + ' items)');
     var correct = 0;
     data.forEach(function(email) {
         if(bayesClassifier.classify(email.words) == email.author)
@@ -115,5 +129,4 @@ function classify(bayesClassifier, data) {
     });
 
     console.log(correct, 'out of', data.length, 'classified correctly', '(' + correct/data.length*100 + "%)");
-    //console.log(bayesClassifier.getClassifications(data[200].words));
 }
