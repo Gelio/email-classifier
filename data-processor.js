@@ -4,11 +4,10 @@
  *
  * @class dataProcessor
  * @constructor
- * @param {jpickle} jpickle jPickle module
- * @param {String|Buffer} authorsData
- * @param {String|Buffer} wordData
+ * @param {String|Object} authorsData Either a string or a buffer
+ * @param {String|Object} wordData Either a string or a buffer
  */
-var dataProcessor = function(jpickle, authorsData, wordData) {
+var dataProcessor = function(authorsData, wordData) {
     /**
      * An array with authors and words from their emails.
      *
@@ -16,7 +15,9 @@ var dataProcessor = function(jpickle, authorsData, wordData) {
      * @type {{author: String, words: String}[]}
      */
     this.data = [];
-    this.jpickle = jpickle;
+    this.jpickle = require('jpickle');
+    this.timeLogger = require('./time-logger.js');
+    this.colors = require('colors');
 
     /**
      * Checks when different tasks are finished
@@ -32,16 +33,15 @@ var dataProcessor = function(jpickle, authorsData, wordData) {
 
 
 
-    console.log('Data processor initiated');
-
+    console.log('Data processor initiated'.blue);
 
     this.parseAuthors(authorsData.toString());
     this.parseWordData(wordData.toString());
 
-    console.log('\tParsed data, beginning trimming');
+    console.log('\tParsed data, beginning trimming'.green);
     this.trimData();
 
-    console.log('Data processor finished it\'s task');
+    console.log('Data processor finished it\'s task'.green);
 };
 
 
@@ -53,11 +53,11 @@ var dataProcessor = function(jpickle, authorsData, wordData) {
  */
 dataProcessor.prototype.parseAuthors = function(authorsData) {
     this.authorsData = authorsData;
-    console.log('\tParsing authors');
+    console.log('\tParsing authors'.blue);
 
+    var parseAuthorsLogger = new this.timeLogger('parsing authors');
     for(var i=0; i < 4; ++i)
         this.data.push({});
-
 
     var unpickledAuthors = this.jpickle.loads(authorsData),
         self = this;
@@ -70,7 +70,8 @@ dataProcessor.prototype.parseAuthors = function(authorsData) {
     });
 
     this.states.authorsParsed = true;
-    console.log('\tFinished parsing authors');
+    parseAuthorsLogger.finished();
+    console.log('\tFinished parsing authors'.green);
 };
 
 /**
@@ -81,8 +82,9 @@ dataProcessor.prototype.parseAuthors = function(authorsData) {
  */
 dataProcessor.prototype.parseWordData = function(wordData) {
     this.wordData = wordData;
-    console.log('\tParsing word data');
+    console.log('\tParsing word data'.blue);
 
+    var parseWordsLogger = new this.timeLogger('parsing words');
     var unpickledWords = this.jpickle.loads(wordData),
         self = this;
 
@@ -91,7 +93,8 @@ dataProcessor.prototype.parseWordData = function(wordData) {
     });
 
     this.states.wordsParsed = true;
-    console.log('\tFinished parsing words');
+    parseWordsLogger.finished();
+    console.log('\tFinished parsing words'.green);
 };
 
 
@@ -103,10 +106,11 @@ dataProcessor.prototype.parseWordData = function(wordData) {
  */
 dataProcessor.prototype.trimData = function() {
     if(this.states.wordsParsed) {
-        var self = this;
+        var self = this,
+            trimLogger = new this.timeLogger('trimming data');
 
         this.data.forEach(function (email, index) {
-            if (!email.words || email.words === null) {
+            if (!email.words || email.words === null || !email.author || email.author === null) {
                 self.data.splice(index, 1);
                 return;
             }
@@ -114,6 +118,7 @@ dataProcessor.prototype.trimData = function() {
         });
 
         this.states.trimmed = true;
+        trimLogger.finished();
     }
     else
         throw 'Tried to trim words before they were parsed';
