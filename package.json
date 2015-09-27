@@ -17,6 +17,8 @@
   },
   "homepage": "https://github.com/Gelio/email-classifier#readme",
   "dependencies": {
-    "machine_learning": "0.0.8"
+    "jpickle": "^0.4.1",
+    "natural": "^0.2.1",
+    "pickle": "^0.2.0"
   }
 }
