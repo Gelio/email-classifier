@@ -15,7 +15,7 @@ var config = {
     forceDataParsing: true,
     forceClassifierTeaching: true,
 
-    limitData: 0.8,   // either false or a percentage (float, e.g. 0.5) to which limit data
+    limitData: 0.05,   // either false or a percentage (float, e.g. 0.5) to which limit data
     testDataPercentage: 0.2   // what percentage of data (post limit) should be used for testing
 };
 

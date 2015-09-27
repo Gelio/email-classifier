@@ -65,13 +65,13 @@ else {
             dataLoader.saveData(emailData);
             savingDataLogger.finished();
         }
-
-        if(config.limitData)
-            emailData.splice(0, Math.floor(emailData.length*(1-config.limitData)));
         emailData.splice(emailData.length-2, 2);  // unknown bug
 
         // Shuffle array
         emailData = _.shuffle(emailData);
+
+        if(config.limitData)
+            emailData.splice(0, Math.floor(emailData.length*(1-config.limitData)));
 
         // Generate test data
         testData = emailData.slice(0, Math.floor(emailData.length*config.testDataPercentage));
@@ -84,12 +84,12 @@ else {
         classifier = new natural.BayesClassifier();
 
         if(config.logTrainingMessages) {
-            var milestoneStep = Math.ceil(learnData.length/100),
+            var milestoneStep = Math.ceil(learnData.length/10),
                 nextMilestone = milestoneStep;
 
             classifier.events.on('trainedWithDocument', function (obj) {
                 if(obj.index == nextMilestone) {
-                    console.log(('Training ' + (obj.index + 1) + ' out of ' + obj.total + " (" + (Math.round((obj.index + 1) / obj.total * 10000) / 100) + "%)").green);
+                    console.log(('Training ' + (obj.index + 1) + ' out of ' + obj.total + " (" + (Math.round((obj.index + 1) / obj.total * 100) / 100) + "%)").green);
                     nextMilestone += milestoneStep;
                 }
             });
